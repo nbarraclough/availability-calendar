@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nick's Availability</title>
+  <title>Nick Barraclough's Availability</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
@@ -342,6 +343,15 @@
       background: var(--slate-200);
     }
 
+    .slot.past {
+      background: var(--slate-100);
+      opacity: 0.5;
+    }
+
+    .slot.past .slot-text {
+      display: none;
+    }
+
     /* ── Legend ── */
     .legend {
       display: flex;
@@ -374,6 +384,12 @@
     .legend-swatch.unavail {
       background: var(--slate-100);
       border-color: var(--slate-200);
+    }
+
+    .legend-swatch.past {
+      background: var(--slate-100);
+      border-color: var(--slate-200);
+      opacity: 0.5;
     }
 
     /* ── Loading ── */
@@ -464,6 +480,36 @@
       border-color: var(--green-400);
     }
 
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 2.5rem 1rem 2rem;
+      font-size: 0.8rem;
+      color: var(--slate-400);
+    }
+
+    .footer a {
+      color: var(--slate-500);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .footer a:hover {
+      color: var(--green-600);
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.25rem;
+    }
+
+    .footer-sep {
+      color: var(--slate-300);
+    }
+
     /* ── Responsive ── */
     @media (max-width: 700px) {
       #calendar-screen { padding: 1.25rem 0.75rem 2rem; }
@@ -480,10 +526,10 @@
   <!-- Password Screen -->
   <div id="password-screen">
     <div class="password-card">
-      <h1>Nick's Availability</h1>
+      <h1>Nick Barraclough's Availability</h1>
       <p class="subtitle">Enter the password to view my calendar</p>
       <div class="input-wrap">
-        <input type="password" id="password-input" placeholder="Password" autocomplete="off" autofocus />
+        <input type="password" id="password-input" placeholder="Password" autocomplete="off" data-1p-ignore autofocus />
       </div>
       <button onclick="checkPassword()">View Calendar</button>
       <div id="password-error" class="error-msg"></div>
@@ -493,9 +539,10 @@
   <!-- Calendar Screen -->
   <div id="calendar-screen">
     <div class="calendar-header">
-      <h1>Nick's Availability</h1>
+      <h1>Nick Barraclough's Availability</h1>
       <div class="week-nav">
         <button onclick="prevWeek()">&#8592; Prev</button>
+        <button id="today-btn" onclick="goToday()" style="display:none">Today</button>
         <span id="week-label"></span>
         <button onclick="nextWeek()">Next &#8594;</button>
       </div>
@@ -516,6 +563,16 @@
     <div class="legend">
       <div class="legend-item"><div class="legend-swatch avail"></div> Available</div>
       <div class="legend-item"><div class="legend-swatch unavail"></div> Busy</div>
+      <div class="legend-item"><div class="legend-swatch past"></div> Passed</div>
+    </div>
+    <div class="footer">
+      <div class="footer-links">
+        <a href="https://www.linkedin.com/feed/" target="_blank">LinkedIn</a>
+        <span class="footer-sep">&middot;</span>
+        <a href="https://github.com/nbarraclough" target="_blank">GitHub</a>
+        <span class="footer-sep">&middot;</span>
+        <a href="mailto:nick@barraclough.nz">nick@barraclough.nz</a>
+      </div>
     </div>
   </div>
 
@@ -548,12 +605,28 @@
       return (new Date(utcStr) - new Date(tzStr)) / 60000;
     }
 
+    const TZ_LABELS = {
+      'America/Los_Angeles': 'Los Angeles / San Francisco',
+      'America/Denver': 'Denver / Salt Lake City',
+      'America/Phoenix': 'Phoenix',
+      'America/Chicago': 'Chicago / Dallas',
+      'America/New_York': 'New York / Boston',
+      'America/Toronto': 'Toronto',
+      'America/Anchorage': 'Anchorage',
+      'Pacific/Honolulu': 'Honolulu',
+      'Europe/London': 'London',
+      'Europe/Paris': 'Paris',
+      'Europe/Berlin': 'Berlin',
+      'Asia/Tokyo': 'Tokyo',
+      'Australia/Sydney': 'Sydney',
+    };
+
     function tzLabel(tz) {
       const parts = new Intl.DateTimeFormat('en-US', {
         timeZone: tz, timeZoneName: 'short'
       }).formatToParts(new Date());
       const abbr = parts.find(p => p.type === 'timeZoneName')?.value || '';
-      const city = tz.split('/').pop().replace(/_/g, ' ');
+      const city = TZ_LABELS[tz] || tz.split('/').pop().replace(/_/g, ' ');
       return `${city} (${abbr})`;
     }
 
@@ -598,7 +671,6 @@
       const hour = parts.find(p => p.type === 'hour').value;
       const minute = parts.find(p => p.type === 'minute').value;
       const period = parts.find(p => p.type === 'dayPeriod').value;
-      if (minute === '00') return `${hour} ${period}`;
       return `${hour}:${minute} ${period}`;
     }
 
@@ -690,6 +762,8 @@
         grid.appendChild(header);
       }
 
+      const nowTs = Math.floor(Date.now() / 1000);
+
       for (let slot = 0; slot < SLOTS_PER_DAY; slot++) {
         // Time label — use Monday's timestamps for the label column
         const labelTs = dayStarts[0] + slot * 1800;
@@ -701,13 +775,17 @@
         for (let d = 0; d < 5; d++) {
           const startTs = dayStarts[d] + slot * 1800;
           const endTs = startTs + 1800;
-
+          const isPast = endTs <= nowTs;
           const isBusy = busySlots.some(b => startTs < b.end_time && endTs > b.start_time);
 
           const cell = document.createElement('div');
-          cell.className = `slot ${isBusy ? 'busy' : 'free'}`;
-          if (!isBusy) {
-            cell.innerHTML = `<span class="slot-text">Available</span>`;
+          if (isPast) {
+            cell.className = 'slot past';
+          } else {
+            cell.className = `slot ${isBusy ? 'busy' : 'free'}`;
+            if (!isBusy) {
+              cell.innerHTML = `<span class="slot-text">Available</span>`;
+            }
           }
           grid.appendChild(cell);
         }
@@ -750,6 +828,7 @@
       const year = currentMonday.getFullYear();
       const month = currentMonday.getMonth();
       const baseDay = currentMonday.getDate();
+      const nowTs = Math.floor(Date.now() / 1000);
       const windows = [];
 
       for (let d = 0; d < 5; d++) {
@@ -759,7 +838,8 @@
         for (let slot = 0; slot < SLOTS_PER_DAY; slot++) {
           const startTs = dayStartTs + slot * 1800;
           const endTs = startTs + 1800;
-          const isBusy = currentBusySlots.some(b => startTs < b.end_time && endTs > b.start_time);
+          const isPast = endTs <= nowTs;
+          const isBusy = isPast || currentBusySlots.some(b => startTs < b.end_time && endTs > b.start_time);
 
           if (!isBusy && windowStartTs === null) {
             windowStartTs = startTs;
@@ -810,8 +890,12 @@
       }, 2000);
     }
 
-    function prevWeek() { currentWeekOffset--; fetchAndRender(); }
-    function nextWeek() { currentWeekOffset++; fetchAndRender(); }
+    function updateTodayBtn() {
+      document.getElementById('today-btn').style.display = currentWeekOffset === 0 ? 'none' : '';
+    }
+    function prevWeek() { currentWeekOffset--; updateTodayBtn(); fetchAndRender(); }
+    function nextWeek() { currentWeekOffset++; updateTodayBtn(); fetchAndRender(); }
+    function goToday() { currentWeekOffset = 0; updateTodayBtn(); fetchAndRender(); }
 
     document.getElementById('password-input').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') checkPassword();
