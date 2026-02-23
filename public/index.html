@@ -863,27 +863,37 @@
       return windows;
     }
 
-    function formatWindow(w) {
+    function formatWindowLine(w) {
+      const tzAbbr = getTZAbbr();
+      const start = formatTsTimeShort(w.startTs);
+      if (w.endsAtClose) return `\u2022 ${start} ${tzAbbr} onwards`;
+      const end = formatTsTimeShort(w.endTs);
+      return `\u2022 ${start} - ${end} ${tzAbbr}`;
+    }
+
+    function formatDayHeader(dayOffset) {
       const date = new Date(currentMonday);
-      date.setDate(date.getDate() + w.dayOffset);
+      date.setDate(date.getDate() + dayOffset);
       const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
       const dayNum = date.getDate();
       const monthName = date.toLocaleDateString('en-US', { month: 'long' });
-      const tzAbbr = getTZAbbr();
-      const start = formatTsTimeShort(w.startTs);
-
-      if (w.endsAtClose) {
-        return `${dayName} ${ordinal(dayNum)} ${monthName}, ${start} ${tzAbbr} onwards`;
-      }
-      const end = formatTsTimeShort(w.endTs);
-      return `${dayName} ${ordinal(dayNum)} ${monthName}, ${start} - ${end} ${tzAbbr}`;
+      return `${dayName} ${ordinal(dayNum)} ${monthName}`;
     }
 
     async function copyAvailability() {
       const windows = getAvailableWindows();
       if (windows.length === 0) return;
 
-      const text = windows.map(formatWindow).join('\n');
+      const grouped = {};
+      for (const w of windows) {
+        if (!grouped[w.dayOffset]) grouped[w.dayOffset] = [];
+        grouped[w.dayOffset].push(w);
+      }
+
+      const text = Object.keys(grouped)
+        .sort((a, b) => a - b)
+        .map(d => `${formatDayHeader(d)}\n${grouped[d].map(formatWindowLine).join('\n')}`)
+        .join('\n\n');
       await navigator.clipboard.writeText(text);
 
       const btn = document.getElementById('copy-btn');
