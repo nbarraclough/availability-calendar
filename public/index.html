@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nick's Availability</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-50: #f0fdf4;
+      --green-100: #dcfce7;
+      --green-200: #bbf7d0;
+      --green-400: #4ade80;
+      --green-500: #22c55e;
+      --green-600: #16a34a;
+      --green-700: #15803d;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+      --radius: 10px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--slate-50);
+      color: var(--slate-800);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Noise texture overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.3;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 256px 256px;
+      z-index: 9999;
+    }
+
+    /* ── Password Screen ── */
+    #password-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, var(--green-100) 0%, transparent 60%),
+        var(--slate-50);
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .password-card {
+      background: white;
+      padding: 3rem 2.5rem 2.5rem;
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+      max-width: 380px;
+      width: 100%;
+      border: 1px solid var(--slate-100);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .password-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--green-400), var(--green-600));
+    }
+
+    .password-card h1 {
+      font-family: 'Newsreader', serif;
+      font-size: 1.75rem;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--slate-900);
+      margin-bottom: 0.35rem;
+    }
+
+    .password-card .subtitle {
+      font-size: 0.9rem;
+      color: var(--slate-400);
+      margin-bottom: 2rem;
+      font-weight: 400;
+    }
+
+    .input-wrap {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 1.5px solid var(--slate-200);
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--slate-800);
+      background: var(--slate-50);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    .input-wrap input:focus {
+      border-color: var(--green-400);
+      box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
+      background: white;
+    }
+
+    .input-wrap input::placeholder {
+      color: var(--slate-300);
+    }
+
+    .password-card button {
+      width: 100%;
+      padding: 0.8rem;
+      background: var(--green-600);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      letter-spacing: 0.01em;
+    }
+
+    .password-card button:hover {
+      background: var(--green-700);
+    }
+
+    .password-card button:active {
+      transform: scale(0.98);
+    }
+
+    .error-msg {
+      color: #dc2626;
+      font-size: 0.82rem;
+      margin-top: 0.75rem;
+      min-height: 1.2em;
+      font-weight: 500;
+    }
+
+    /* ── Calendar Screen ── */
+    #calendar-screen {
+      display: none;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 3rem;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .calendar-header h1 {
+      font-family: 'Newsreader', serif;
+      font-size: 1.6rem;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--slate-900);
+    }
+
+    .week-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .week-nav button {
+      padding: 0.45rem 0.9rem;
+      background: white;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--slate-600);
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.01em;
+    }
+
+    .week-nav button:hover {
+      background: var(--slate-50);
+      border-color: var(--slate-300);
+      color: var(--slate-800);
+    }
+
+    .week-nav button:active {
+      transform: scale(0.97);
+    }
+
+    #week-label {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--slate-500);
+      min-width: 140px;
+      text-align: center;
+      padding: 0 0.25rem;
+    }
+
+    /* ── Calendar Grid ── */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: 76px repeat(5, 1fr);
+      background: white;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--slate-100);
+    }
+
+    .corner-cell {
+      background: white;
+      border-bottom: 1.5px solid var(--slate-200);
+      border-right: 1px solid var(--slate-100);
+    }
+
+    .day-header {
+      padding: 0.9rem 0.5rem 0.75rem;
+      text-align: center;
+      background: white;
+      border-bottom: 1.5px solid var(--slate-200);
+      border-right: 1px solid var(--slate-100);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+    }
+
+    .day-header:last-of-type {
+      border-right: none;
+    }
+
+    .day-header .day-name {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--slate-400);
+      display: block;
+    }
+
+    .day-header .day-date {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      display: block;
+    }
+
+    .time-label {
+      padding: 0 0.6rem 0 0;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--slate-400);
+      text-align: right;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      height: 38px;
+      border-right: 1px solid var(--slate-100);
+      border-bottom: 1px solid var(--slate-50);
+      letter-spacing: 0.01em;
+    }
+
+    .slot {
+      height: 38px;
+      border-bottom: 1px solid var(--slate-100);
+      border-right: 1px solid var(--slate-100);
+      transition: background 0.15s;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .slot:nth-child(6n) {
+      border-right: none;
+    }
+
+    .slot.free {
+      background: var(--green-200);
+      cursor: default;
+    }
+
+    .slot.free:hover {
+      background: var(--green-400);
+    }
+
+    .slot.free .slot-text {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--green-700);
+      opacity: 0.7;
+      transition: opacity 0.15s;
+    }
+
+    .slot.free:hover .slot-text {
+      opacity: 1;
+      color: white;
+    }
+
+    .slot.busy {
+      background: var(--slate-200);
+    }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1.25rem;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.78rem;
+      color: var(--slate-400);
+      font-weight: 500;
+    }
+
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+    }
+
+    .legend-swatch.avail {
+      background: var(--green-100);
+      border-color: var(--green-200);
+    }
+
+    .legend-swatch.unavail {
+      background: var(--slate-100);
+      border-color: var(--slate-200);
+    }
+
+    /* ── Loading ── */
+    .loading {
+      text-align: center;
+      padding: 6rem 2rem;
+      color: var(--slate-400);
+      font-size: 0.9rem;
+    }
+
+    .loading-spinner {
+      width: 28px;
+      height: 28px;
+      border: 2.5px solid var(--slate-200);
+      border-top-color: var(--green-500);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Copy Button ── */
+    .copy-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1.25rem;
+      gap: 0.75rem;
+    }
+
+    .copy-btn {
+      padding: 0.55rem 1.2rem;
+      background: var(--slate-800);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.01em;
+    }
+
+    .copy-btn:hover {
+      background: var(--slate-900);
+    }
+
+    .copy-btn:active {
+      transform: scale(0.97);
+    }
+
+    .copy-btn.copied {
+      background: var(--green-600);
+    }
+
+    /* ── Timezone Selector ── */
+    .tz-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .tz-bar label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--slate-400);
+    }
+
+    .tz-bar select {
+      padding: 0.4rem 0.6rem;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      color: var(--slate-600);
+      background: white;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .tz-bar select:focus {
+      border-color: var(--green-400);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      #calendar-screen { padding: 1.25rem 0.75rem 2rem; }
+      .calendar-header { flex-direction: column; align-items: flex-start; }
+      .calendar-grid { grid-template-columns: 58px repeat(5, 1fr); border-radius: 10px; }
+      .time-label { font-size: 0.62rem; padding-right: 0.4rem; }
+      .slot { height: 34px; }
+      .day-header .day-date { font-size: 0.85rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Password Screen -->
+  <div id="password-screen">
+    <div class="password-card">
+      <h1>Nick's Availability</h1>
+      <p class="subtitle">Enter the password to view my calendar</p>
+      <div class="input-wrap">
+        <input type="password" id="password-input" placeholder="Password" autocomplete="off" autofocus />
+      </div>
+      <button onclick="checkPassword()">View Calendar</button>
+      <div id="password-error" class="error-msg"></div>
+    </div>
+  </div>
+
+  <!-- Calendar Screen -->
+  <div id="calendar-screen">
+    <div class="calendar-header">
+      <h1>Nick's Availability</h1>
+      <div class="week-nav">
+        <button onclick="prevWeek()">&#8592; Prev</button>
+        <span id="week-label"></span>
+        <button onclick="nextWeek()">Next &#8594;</button>
+      </div>
+    </div>
+    <div class="tz-bar">
+      <label for="tz-select">Timezone:</label>
+      <select id="tz-select" onchange="changeTimezone(this.value)"></select>
+    </div>
+    <div id="calendar-container">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        Loading availability&hellip;
+      </div>
+    </div>
+    <div class="copy-bar">
+      <button class="copy-btn" id="copy-btn" onclick="copyAvailability()">Copy available times</button>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-swatch avail"></div> Available</div>
+      <div class="legend-item"><div class="legend-swatch unavail"></div> Busy</div>
+    </div>
+  </div>
+
+  <script>
+    let password = '';
+    let currentWeekOffset = 0;
+    let selectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let currentMonday = null;
+    let currentBusySlots = [];
+
+    // Nick's working hours are 9am–6pm Mountain Time
+    const WORK_TZ = 'America/Denver';
+    const WORK_START = 9;
+    const WORK_END = 18;
+    const SLOTS_PER_DAY = (WORK_END - WORK_START) * 2; // 18
+
+    const TIMEZONES = [
+      'Pacific/Honolulu', 'America/Anchorage', 'America/Los_Angeles',
+      'America/Denver', 'America/Phoenix', 'America/Chicago',
+      'America/New_York', 'America/Toronto', 'America/Sao_Paulo',
+      'Atlantic/Reykjavik', 'Europe/London', 'Europe/Paris',
+      'Europe/Berlin', 'Europe/Helsinki', 'Asia/Dubai',
+      'Asia/Kolkata', 'Asia/Bangkok', 'Asia/Shanghai',
+      'Asia/Tokyo', 'Australia/Sydney', 'Pacific/Auckland',
+    ];
+
+    function getOffsetMinutes(date, tz) {
+      const utcStr = date.toLocaleString('en-US', { timeZone: 'UTC' });
+      const tzStr = date.toLocaleString('en-US', { timeZone: tz });
+      return (new Date(utcStr) - new Date(tzStr)) / 60000;
+    }
+
+    function tzLabel(tz) {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: tz, timeZoneName: 'short'
+      }).formatToParts(new Date());
+      const abbr = parts.find(p => p.type === 'timeZoneName')?.value || '';
+      const city = tz.split('/').pop().replace(/_/g, ' ');
+      return `${city} (${abbr})`;
+    }
+
+    function initTimezoneSelector() {
+      const select = document.getElementById('tz-select');
+      let tzList = [...TIMEZONES];
+      if (!tzList.includes(selectedTimezone)) tzList.push(selectedTimezone);
+
+      const now = new Date();
+      tzList.sort((a, b) => getOffsetMinutes(now, b) - getOffsetMinutes(now, a));
+
+      for (const tz of tzList) {
+        const opt = document.createElement('option');
+        opt.value = tz;
+        opt.textContent = tzLabel(tz);
+        if (tz === selectedTimezone) opt.selected = true;
+        select.appendChild(opt);
+      }
+    }
+
+    function changeTimezone(tz) {
+      selectedTimezone = tz;
+      fetchAndRender();
+    }
+
+    // Get Unix timestamp for a specific local time in a given timezone
+    function tsInTZ(year, month, day, hour, minute, tz) {
+      const asUTC = new Date(Date.UTC(year, month, day, hour, minute, 0));
+      const utcStr = asUTC.toLocaleString('en-US', { timeZone: 'UTC' });
+      const tzStr = asUTC.toLocaleString('en-US', { timeZone: tz });
+      const offset = new Date(utcStr) - new Date(tzStr);
+      return Math.floor((asUTC.getTime() + offset) / 1000);
+    }
+
+    // Format a Unix timestamp as a time string in the viewer's timezone
+    function formatSlotTime(unixTs) {
+      const d = new Date(unixTs * 1000);
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: selectedTimezone,
+        hour: 'numeric', minute: '2-digit', hour12: true
+      }).formatToParts(d);
+      const hour = parts.find(p => p.type === 'hour').value;
+      const minute = parts.find(p => p.type === 'minute').value;
+      const period = parts.find(p => p.type === 'dayPeriod').value;
+      if (minute === '00') return `${hour} ${period}`;
+      return `${hour}:${minute} ${period}`;
+    }
+
+    function getMonday(date) {
+      const d = new Date(date);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      d.setDate(diff);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+
+    function checkPassword() {
+      password = document.getElementById('password-input').value;
+      fetchAndRender();
+    }
+
+    async function fetchAndRender() {
+      const monday = getMonday(new Date());
+      monday.setDate(monday.getDate() + currentWeekOffset * 7);
+
+      const year = monday.getFullYear();
+      const month = monday.getMonth();
+      const day = monday.getDate();
+
+      // Query Nylas for Mon midnight to Sat midnight in working timezone
+      const startTime = tsInTZ(year, month, day, 0, 0, WORK_TZ);
+      const endTime = tsInTZ(year, month, day + 5, 0, 0, WORK_TZ);
+
+      try {
+        const response = await fetch('/api/free-busy', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Password': password,
+          },
+          body: JSON.stringify({ start_time: startTime, end_time: endTime }),
+        });
+
+        if (response.status === 401) {
+          document.getElementById('password-error').textContent = 'Invalid password';
+          return;
+        }
+
+        const data = await response.json();
+        document.getElementById('password-screen').style.display = 'none';
+        document.getElementById('calendar-screen').style.display = 'block';
+        renderCalendar(monday, data);
+      } catch (error) {
+        document.getElementById('password-error').textContent = 'Something went wrong';
+      }
+    }
+
+    function renderCalendar(monday, data) {
+      const fridayDate = new Date(monday);
+      fridayDate.setDate(fridayDate.getDate() + 4);
+      document.getElementById('week-label').textContent =
+        `${monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} \u2014 ${fridayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+
+      const busySlots = data.data?.[0]?.time_slots || [];
+      currentMonday = monday;
+      currentBusySlots = busySlots;
+
+      const year = monday.getFullYear();
+      const month = monday.getMonth();
+      const baseDay = monday.getDate();
+
+      // Pre-compute each day's start timestamp (9am MST)
+      const dayStarts = [];
+      for (let d = 0; d < 5; d++) {
+        dayStarts.push(tsInTZ(year, month, baseDay + d, WORK_START, 0, WORK_TZ));
+      }
+
+      const container = document.getElementById('calendar-container');
+      const grid = document.createElement('div');
+      grid.className = 'calendar-grid';
+
+      const corner = document.createElement('div');
+      corner.className = 'corner-cell';
+      grid.appendChild(corner);
+
+      const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      for (let d = 0; d < 5; d++) {
+        const date = new Date(monday);
+        date.setDate(date.getDate() + d);
+        const header = document.createElement('div');
+        header.className = 'day-header';
+        header.innerHTML = `<span class="day-name">${dayNames[d]}</span><span class="day-date">${date.getMonth() + 1}/${date.getDate()}</span>`;
+        grid.appendChild(header);
+      }
+
+      for (let slot = 0; slot < SLOTS_PER_DAY; slot++) {
+        // Time label — use Monday's timestamps for the label column
+        const labelTs = dayStarts[0] + slot * 1800;
+        const label = document.createElement('div');
+        label.className = 'time-label';
+        label.textContent = formatSlotTime(labelTs);
+        grid.appendChild(label);
+
+        for (let d = 0; d < 5; d++) {
+          const startTs = dayStarts[d] + slot * 1800;
+          const endTs = startTs + 1800;
+
+          const isBusy = busySlots.some(b => startTs < b.end_time && endTs > b.start_time);
+
+          const cell = document.createElement('div');
+          cell.className = `slot ${isBusy ? 'busy' : 'free'}`;
+          if (!isBusy) {
+            cell.innerHTML = `<span class="slot-text">Available</span>`;
+          }
+          grid.appendChild(cell);
+        }
+      }
+
+      container.innerHTML = '';
+      container.appendChild(grid);
+    }
+
+    // ── Copy availability ──
+
+    function ordinal(n) {
+      const s = ['th', 'st', 'nd', 'rd'];
+      const v = n % 100;
+      return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    }
+
+    function formatTsTimeShort(unixTs) {
+      const d = new Date(unixTs * 1000);
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: selectedTimezone,
+        hour: 'numeric', minute: '2-digit', hour12: true
+      }).formatToParts(d);
+      const hour = parts.find(p => p.type === 'hour').value;
+      const minute = parts.find(p => p.type === 'minute').value;
+      const period = parts.find(p => p.type === 'dayPeriod').value.toLowerCase();
+      if (minute === '00') return `${hour}${period}`;
+      return `${hour}:${minute}${period}`;
+    }
+
+    function getTZAbbr() {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: selectedTimezone, timeZoneName: 'short'
+      }).formatToParts(new Date());
+      return parts.find(p => p.type === 'timeZoneName')?.value || '';
+    }
+
+    function getAvailableWindows() {
+      if (!currentMonday) return [];
+      const year = currentMonday.getFullYear();
+      const month = currentMonday.getMonth();
+      const baseDay = currentMonday.getDate();
+      const windows = [];
+
+      for (let d = 0; d < 5; d++) {
+        const dayStartTs = tsInTZ(year, month, baseDay + d, WORK_START, 0, WORK_TZ);
+        let windowStartTs = null;
+
+        for (let slot = 0; slot < SLOTS_PER_DAY; slot++) {
+          const startTs = dayStartTs + slot * 1800;
+          const endTs = startTs + 1800;
+          const isBusy = currentBusySlots.some(b => startTs < b.end_time && endTs > b.start_time);
+
+          if (!isBusy && windowStartTs === null) {
+            windowStartTs = startTs;
+          } else if (isBusy && windowStartTs !== null) {
+            windows.push({ dayOffset: d, startTs: windowStartTs, endTs: startTs });
+            windowStartTs = null;
+          }
+        }
+
+        if (windowStartTs !== null) {
+          const dayEndTs = dayStartTs + SLOTS_PER_DAY * 1800;
+          windows.push({ dayOffset: d, startTs: windowStartTs, endTs: dayEndTs, endsAtClose: true });
+        }
+      }
+
+      return windows;
+    }
+
+    function formatWindow(w) {
+      const date = new Date(currentMonday);
+      date.setDate(date.getDate() + w.dayOffset);
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+      const dayNum = date.getDate();
+      const monthName = date.toLocaleDateString('en-US', { month: 'long' });
+      const tzAbbr = getTZAbbr();
+      const start = formatTsTimeShort(w.startTs);
+
+      if (w.endsAtClose) {
+        return `${dayName} ${ordinal(dayNum)} ${monthName}, ${start} ${tzAbbr} onwards`;
+      }
+      const end = formatTsTimeShort(w.endTs);
+      return `${dayName} ${ordinal(dayNum)} ${monthName}, ${start} - ${end} ${tzAbbr}`;
+    }
+
+    async function copyAvailability() {
+      const windows = getAvailableWindows();
+      if (windows.length === 0) return;
+
+      const text = windows.map(formatWindow).join('\n');
+      await navigator.clipboard.writeText(text);
+
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy available times';
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+
+    function prevWeek() { currentWeekOffset--; fetchAndRender(); }
+    function nextWeek() { currentWeekOffset++; fetchAndRender(); }
+
+    document.getElementById('password-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') checkPassword();
+    });
+
+    initTimezoneSelector();
+  </script>
+
+</body>
+</html>
