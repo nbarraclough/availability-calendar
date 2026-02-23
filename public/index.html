@@ -594,6 +594,7 @@
     const WORK_START = 9;
     const WORK_END = 18;
     const SLOTS_PER_DAY = (WORK_END - WORK_START) * 2; // 18
+    const MAX_WEEKS_AHEAD = 4;
 
     const TIMEZONES = [
       'Pacific/Honolulu', 'America/Anchorage', 'America/Los_Angeles',
@@ -838,10 +839,11 @@
     }
 
     function getAvailableWindows() {
-      if (!currentMonday) return [];
-      const year = currentMonday.getFullYear();
-      const month = currentMonday.getMonth();
-      const baseDay = currentMonday.getDate();
+      if (currentBusySlots === null) return [];
+      const monday = getDisplayedMonday();
+      const year = monday.getFullYear();
+      const month = monday.getMonth();
+      const baseDay = monday.getDate();
       const nowTs = Math.floor(Date.now() / 1000);
       const windows = [];
 
@@ -880,8 +882,17 @@
       return `\u2022 ${start} - ${end} ${tzAbbr}`;
     }
 
+    // Compute the displayed Monday fresh (never rely on stored state)
+    function getDisplayedMonday() {
+      const offset = Math.max(0, Math.min(currentWeekOffset, MAX_WEEKS_AHEAD - 1));
+      const monday = getMonday(new Date());
+      monday.setDate(monday.getDate() + offset * 7);
+      return monday;
+    }
+
     function formatDayHeader(dayOffset) {
-      const date = new Date(currentMonday);
+      const monday = getDisplayedMonday();
+      const date = new Date(monday);
       date.setDate(date.getDate() + dayOffset);
       const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
       const dayNum = date.getDate();
@@ -917,7 +928,6 @@
     function updateTodayBtn() {
       document.getElementById('today-btn').style.display = currentWeekOffset === 0 ? 'none' : '';
     }
-    const MAX_WEEKS_AHEAD = 4;
     function updateNavButtons() {
       updateTodayBtn();
       document.getElementById('prev-btn').disabled = currentWeekOffset <= 0;
