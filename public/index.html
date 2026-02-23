@@ -893,7 +893,7 @@
     function formatDayHeader(dayOffset) {
       const monday = getDisplayedMonday();
       const date = new Date(monday);
-      date.setDate(date.getDate() + dayOffset);
+      date.setDate(date.getDate() + Number(dayOffset));
       const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
       const dayNum = date.getDate();
       const monthName = date.toLocaleDateString('en-US', { month: 'long' });
