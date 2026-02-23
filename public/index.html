@@ -227,6 +227,12 @@
       transform: scale(0.97);
     }
 
+    .week-nav button:disabled {
+      opacity: 0.35;
+      cursor: default;
+      pointer-events: none;
+    }
+
     #week-label {
       font-size: 0.88rem;
       font-weight: 500;
@@ -541,10 +547,10 @@
     <div class="calendar-header">
       <h1>Nick Barraclough's Availability</h1>
       <div class="week-nav">
-        <button onclick="prevWeek()">&#8592; Prev</button>
+        <button id="prev-btn" onclick="prevWeek()" disabled>&#8592; Prev</button>
         <button id="today-btn" onclick="goToday()" style="display:none">Today</button>
         <span id="week-label"></span>
-        <button onclick="nextWeek()">Next &#8594;</button>
+        <button id="next-btn" onclick="nextWeek()">Next &#8594;</button>
       </div>
     </div>
     <div class="tz-bar">
@@ -809,11 +815,10 @@
         timeZone: selectedTimezone,
         hour: 'numeric', minute: '2-digit', hour12: true
       }).formatToParts(d);
-      const hour = parts.find(p => p.type === 'hour').value;
+      const hour = parts.find(p => p.type === 'hour').value.padStart(2, '0');
       const minute = parts.find(p => p.type === 'minute').value;
-      const period = parts.find(p => p.type === 'dayPeriod').value.toLowerCase();
-      if (minute === '00') return `${hour}${period}`;
-      return `${hour}:${minute}${period}`;
+      const period = parts.find(p => p.type === 'dayPeriod').value.toUpperCase();
+      return `${hour}:${minute} ${period}`;
     }
 
     function getTZAbbr() {
@@ -893,9 +898,15 @@
     function updateTodayBtn() {
       document.getElementById('today-btn').style.display = currentWeekOffset === 0 ? 'none' : '';
     }
-    function prevWeek() { currentWeekOffset--; updateTodayBtn(); fetchAndRender(); }
-    function nextWeek() { currentWeekOffset++; updateTodayBtn(); fetchAndRender(); }
-    function goToday() { currentWeekOffset = 0; updateTodayBtn(); fetchAndRender(); }
+    const MAX_WEEKS_AHEAD = 4;
+    function updateNavButtons() {
+      updateTodayBtn();
+      document.getElementById('prev-btn').disabled = currentWeekOffset <= 0;
+      document.getElementById('next-btn').disabled = currentWeekOffset >= MAX_WEEKS_AHEAD - 1;
+    }
+    function prevWeek() { if (currentWeekOffset > 0) { currentWeekOffset--; updateNavButtons(); fetchAndRender(); } }
+    function nextWeek() { if (currentWeekOffset < MAX_WEEKS_AHEAD - 1) { currentWeekOffset++; updateNavButtons(); fetchAndRender(); } }
+    function goToday() { currentWeekOffset = 0; updateNavButtons(); fetchAndRender(); }
 
     document.getElementById('password-input').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') checkPassword();
@@ -903,6 +914,8 @@
 
     initTimezoneSelector();
   </script>
+
+  <script defer src="/_vercel/insights/script.js"></script>
 
 </body>
 </html>
