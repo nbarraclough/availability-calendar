@@ -11,10 +11,10 @@ app.use(express.json());
 app.use(express.static(join(__dirname, 'public')));
 
 const PASSWORD = process.env.PASSWORD || 'workos';
-const NYLAS_API_KEY = process.env.NYLAS_API_KEY;
-const NYLAS_GRANT_ID = process.env.NYLAS_GRANT_ID;
-const NYLAS_EMAIL = process.env.NYLAS_EMAIL;
-const NYLAS_CALENDAR_ID = 'primary';
+const NYLAS_API_KEY          = process.env.NYLAS_API_KEY;
+const NYLAS_GRANT_ID         = process.env.NYLAS_GRANT_ID;         // work account (nick@nylas.com) — free/busy + block
+const NYLAS_EMAIL            = process.env.NYLAS_EMAIL;
+const NYLAS_PERSONAL_GRANT_ID = process.env.NYLAS_PERSONAL_GRANT_ID; // personal account — real meeting + Meet link
 
 function requireAuth(req, res, next) {
   const input = (req.headers['x-password'] || '').replace(/[\u201C\u201D\u2018\u2019"']/g, '').trim().toLowerCase();
@@ -75,33 +75,56 @@ app.post('/api/book', requireAuth, async (req, res) => {
   const safeName        = (typeof name === 'string' ? name.trim().slice(0, 100) : '') || email;
   const safeDescription = typeof description === 'string' ? description.trim().slice(0, 2000) : '';
 
+  const nylasHeaders = {
+    'Authorization': `Bearer ${NYLAS_API_KEY}`,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+
   try {
-    const url = `https://api.us.nylas.com/v3/grants/${NYLAS_GRANT_ID}/events`
-      + `?calendar_id=${encodeURIComponent(NYLAS_CALENDAR_ID)}&notify_participants=true`;
+    // 1. Create the real meeting from the personal account (participant invited, Google Meet attached)
+    const meetingRes = await fetch(
+      `https://api.us.nylas.com/v3/grants/${NYLAS_PERSONAL_GRANT_ID}/events?calendar_id=primary&notify_participants=true`,
+      {
+        method: 'POST',
+        headers: nylasHeaders,
+        body: JSON.stringify({
+          title: safeTitle,
+          description: safeDescription,
+          when: { start_time, end_time },
+          participants: [{ email, name: safeName }],
+          conferencing: { provider: 'Google Meet', autocreate: {} },
+        }),
+      }
+    );
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${NYLAS_API_KEY}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        title: safeTitle,
-        description: safeDescription,
-        when: { start_time, end_time },
-        participants: [{ email, name: safeName }],
-        conferencing: { provider: 'Google Meet', autocreate: {} },
-      }),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      console.error('Nylas create event error:', data);
-      return res.status(response.status).json({ error: 'Failed to create event' });
+    const meetingData = await meetingRes.json();
+    if (!meetingRes.ok) {
+      console.error('Nylas create meeting error:', meetingData);
+      return res.status(meetingRes.status).json({ error: 'Failed to create meeting' });
     }
 
-    res.json({ success: true, event: data.data });
+    // 2. Block the same slot on the work calendar so it shows as busy
+    const blockRes = await fetch(
+      `https://api.us.nylas.com/v3/grants/${NYLAS_GRANT_ID}/events?calendar_id=primary`,
+      {
+        method: 'POST',
+        headers: nylasHeaders,
+        body: JSON.stringify({
+          title: 'Blocked',
+          when: { start_time, end_time },
+          visibility: 'private',
+        }),
+      }
+    );
+
+    if (!blockRes.ok) {
+      const blockData = await blockRes.json();
+      console.error('Nylas create block error:', blockData);
+      // Non-fatal — meeting was created, just log the failure
+    }
+
+    res.json({ success: true, event: meetingData.data });
   } catch (error) {
     console.error('Book error:', error);
     res.status(500).json({ error: 'Failed to create event' });
