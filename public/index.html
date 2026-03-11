@@ -68,7 +68,7 @@
       height: 100%;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
-      opacity: 0.9;
+      opacity: 0.6;
     }
 
     @keyframes fadeIn {
@@ -1144,9 +1144,9 @@
         63, 31, 55, 23, 61, 29, 53, 21,
       ];
 
-      // Dark / light pixel colours (warm-dark palette)
+      // Dark / light pixel colours — keep contrast very low
       const C0 = [13,  13,  17 ]; // bg
-      const C1 = [46,  44,  64 ]; // slightly lighter, hint of purple
+      const C1 = [26,  25,  33 ]; // barely lighter
 
       let imgW, imgH, imageData, rafId;
 
@@ -1173,7 +1173,7 @@
 
       let t = 0;
       function frame() {
-        t += 0.012;
+        t += 0.005;
         const d = imageData.data;
         for (let y = 0; y < imgH; y++) {
           for (let x = 0; x < imgW; x++) {
