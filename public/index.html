@@ -1005,6 +1005,10 @@
             if (!isBusy) {
               cell.innerHTML = `<span class="slot-text">Available</span>`;
               cell.addEventListener('click', () => openBookingModal(startTs, endTs));
+              cell.addEventListener('touchend', (e) => {
+                e.preventDefault(); // prevent ghost click firing twice
+                openBookingModal(startTs, endTs);
+              }, { passive: false });
             }
           }
           grid.appendChild(cell);
