@@ -1171,11 +1171,20 @@
         imageData = ctx.createImageData(imgW, imgH);
       }
 
-      canvas.parentElement.addEventListener('mousemove', e => {
+      function updatePointer(clientX, clientY) {
         const rect = canvas.parentElement.getBoundingClientRect();
-        targetMx = (e.clientX - rect.left)  / rect.width;
-        targetMy = (e.clientY - rect.top)   / rect.height;
-      });
+        targetMx = (clientX - rect.left) / rect.width;
+        targetMy = (clientY - rect.top)  / rect.height;
+      }
+
+      canvas.parentElement.addEventListener('mousemove', e => updatePointer(e.clientX, e.clientY));
+      canvas.parentElement.addEventListener('touchmove', e => {
+        e.preventDefault();
+        updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: false });
+      canvas.parentElement.addEventListener('touchstart', e => {
+        updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
 
       // Layered sine field + mouse ripple
       function field(x, y, t, smx, smy) {
