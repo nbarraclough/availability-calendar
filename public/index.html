@@ -318,7 +318,7 @@
 
     .slot.free {
       background: var(--slot-free-bg);
-      cursor: default;
+      cursor: pointer;
     }
 
     .slot.free:hover {
@@ -479,6 +479,200 @@
 
     .footer-sep { color: rgba(255,255,255,0.12); }
 
+    /* ── Booking Modal ── */
+    #booking-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.72);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      z-index: 10000;
+      animation: fadeIn 0.18s ease-out;
+    }
+
+    #booking-modal {
+      background: var(--surface);
+      border: 1px solid var(--border-md);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 32px 80px rgba(0,0,0,0.7);
+      padding: 2.25rem 2.25rem 2rem;
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      animation: modalIn 0.2s ease-out;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      color: var(--text-3);
+      font-size: 1.25rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0.25rem 0.4rem;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .modal-close:hover { color: var(--text-1); background: var(--surface-2); }
+
+    .modal-slot-time {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-2);
+      letter-spacing: 0.01em;
+      margin-bottom: 0.6rem;
+    }
+
+    #booking-modal h2 {
+      font-size: 1.25rem;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      color: var(--text-1);
+      margin-bottom: 1.75rem;
+    }
+
+    .modal-field {
+      margin-bottom: 1rem;
+    }
+
+    .modal-field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-2);
+      margin-bottom: 0.35rem;
+      letter-spacing: 0.01em;
+    }
+
+    .modal-field .optional {
+      font-weight: 400;
+      color: var(--text-3);
+    }
+
+    .modal-field input,
+    .modal-field textarea {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1px solid var(--border-md);
+      border-radius: var(--radius);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text-1);
+      background: var(--surface-2);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      resize: none;
+    }
+
+    .modal-field input:focus,
+    .modal-field textarea:focus {
+      border-color: rgba(255,255,255,0.25);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.05);
+    }
+
+    .modal-field input::placeholder,
+    .modal-field textarea::placeholder { color: var(--text-3); }
+
+    .modal-error {
+      color: var(--error);
+      font-size: 0.8rem;
+      min-height: 1.2em;
+      margin-bottom: 0.75rem;
+      font-weight: 500;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .modal-cancel {
+      flex: 1;
+      padding: 0.72rem;
+      background: transparent;
+      border: 1px solid var(--border-md);
+      border-radius: var(--radius);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .modal-cancel:hover { background: var(--surface-2); color: var(--text-1); border-color: rgba(255,255,255,0.18); }
+
+    .modal-submit {
+      flex: 2;
+      padding: 0.72rem;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      letter-spacing: -0.01em;
+    }
+
+    .modal-submit:hover    { background: var(--btn-hover); }
+    .modal-submit:disabled { opacity: 0.5; cursor: default; }
+
+    /* success step */
+    .success-check {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(236,234,228,0.1);
+      border: 1px solid rgba(236,234,228,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+      font-size: 1.1rem;
+      color: var(--text-1);
+    }
+
+    #booking-success-step {
+      text-align: center;
+    }
+
+    #booking-success-step h2 {
+      margin-bottom: 0.6rem;
+    }
+
+    .success-desc {
+      font-size: 0.875rem;
+      color: var(--text-2);
+      line-height: 1.55;
+      margin-bottom: 0.5rem;
+    }
+
+    .success-time {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-2);
+      margin-bottom: 1.75rem;
+    }
+
+    #booking-success-step .modal-submit {
+      width: 100%;
+    }
+
     /* ── Responsive ── */
     @media (max-width: 700px) {
       #calendar-screen { padding: 1.25rem 0.75rem 2rem; }
@@ -560,6 +754,7 @@
 
   <script>
     let password = '';
+    let selectedSlot = null;
     let currentWeekOffset = 0;
     let selectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     let currentMonday = null;
@@ -777,6 +972,7 @@
             cell.className = `slot ${isBusy ? 'busy' : 'free'}`;
             if (!isBusy) {
               cell.innerHTML = `<span class="slot-text">Available</span>`;
+              cell.addEventListener('click', () => openBookingModal(startTs, endTs));
             }
           }
           grid.appendChild(cell);
@@ -917,8 +1113,138 @@
       if (e.key === 'Enter') checkPassword();
     });
 
+    // ── Booking Modal ──
+
+    function formatSlotRange(startTs, endTs) {
+      const d = new Date(startTs * 1000);
+      const dayStr = d.toLocaleDateString('en-US', {
+        timeZone: selectedTimezone, weekday: 'long', month: 'short', day: 'numeric'
+      });
+      return `${dayStr}  ·  ${formatSlotTime(startTs)} – ${formatSlotTime(endTs)}`;
+    }
+
+    function openBookingModal(startTs, endTs) {
+      selectedSlot = { startTs, endTs };
+      document.getElementById('modal-time-display').textContent = formatSlotRange(startTs, endTs);
+      document.getElementById('book-name').value = '';
+      document.getElementById('book-email').value = '';
+      document.getElementById('book-title').value = '';
+      document.getElementById('book-notes').value = '';
+      document.getElementById('booking-error').textContent = '';
+      document.getElementById('booking-form-step').style.display = '';
+      document.getElementById('booking-success-step').style.display = 'none';
+      const btn = document.getElementById('booking-submit');
+      btn.disabled = false;
+      btn.textContent = 'Confirm booking';
+      document.getElementById('booking-overlay').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => document.getElementById('book-name').focus(), 50);
+    }
+
+    function closeBookingModal() {
+      document.getElementById('booking-overlay').style.display = 'none';
+      document.body.style.overflow = '';
+      selectedSlot = null;
+    }
+
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById('booking-overlay')) closeBookingModal();
+    }
+
+    async function submitBooking() {
+      const name  = document.getElementById('book-name').value.trim();
+      const email = document.getElementById('book-email').value.trim();
+      const title = document.getElementById('book-title').value.trim();
+      const notes = document.getElementById('book-notes').value.trim();
+      const errorEl = document.getElementById('booking-error');
+      errorEl.textContent = '';
+
+      if (!name)  { errorEl.textContent = 'Please enter your name.'; return; }
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errorEl.textContent = 'Please enter a valid email address.'; return;
+      }
+      if (!title) { errorEl.textContent = 'Please describe what this meeting is about.'; return; }
+
+      const btn = document.getElementById('booking-submit');
+      btn.disabled = true;
+      btn.textContent = 'Booking…';
+
+      try {
+        const response = await fetch('/api/book', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Password': password },
+          body: JSON.stringify({
+            start_time: selectedSlot.startTs,
+            end_time:   selectedSlot.endTs,
+            title, description: notes, name, email,
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          errorEl.textContent = data.error || 'Something went wrong. Please try again.';
+          btn.disabled = false;
+          btn.textContent = 'Confirm booking';
+          return;
+        }
+
+        document.getElementById('success-email').textContent = email;
+        document.getElementById('success-time').textContent = formatSlotRange(selectedSlot.startTs, selectedSlot.endTs);
+        document.getElementById('booking-form-step').style.display = 'none';
+        document.getElementById('booking-success-step').style.display = '';
+        fetchAndRender(); // refresh calendar in background
+      } catch {
+        errorEl.textContent = 'Connection error. Please try again.';
+        btn.disabled = false;
+        btn.textContent = 'Confirm booking';
+      }
+    }
+
     initTimezoneSelector();
   </script>
+
+  <!-- Booking Modal -->
+  <div id="booking-overlay" style="display:none" onclick="handleOverlayClick(event)">
+    <div id="booking-modal">
+      <button class="modal-close" onclick="closeBookingModal()" aria-label="Close">&#x2715;</button>
+
+      <!-- Form step -->
+      <div id="booking-form-step">
+        <div class="modal-slot-time" id="modal-time-display"></div>
+        <h2>Book a meeting</h2>
+        <div class="modal-field">
+          <label for="book-name">Your name</label>
+          <input type="text" id="book-name" placeholder="Jane Smith" autocomplete="name" />
+        </div>
+        <div class="modal-field">
+          <label for="book-email">Your email</label>
+          <input type="email" id="book-email" placeholder="jane@example.com" autocomplete="email" />
+        </div>
+        <div class="modal-field">
+          <label for="book-title">What's this about?</label>
+          <input type="text" id="book-title" placeholder="Quick intro call" />
+        </div>
+        <div class="modal-field">
+          <label for="book-notes">Notes <span class="optional">(optional)</span></label>
+          <textarea id="book-notes" placeholder="Anything else Nick should know…" rows="3"></textarea>
+        </div>
+        <div class="modal-error" id="booking-error"></div>
+        <div class="modal-actions">
+          <button class="modal-cancel" onclick="closeBookingModal()">Cancel</button>
+          <button class="modal-submit" id="booking-submit" onclick="submitBooking()">Confirm booking</button>
+        </div>
+      </div>
+
+      <!-- Success step -->
+      <div id="booking-success-step" style="display:none">
+        <div class="success-check">&#10003;</div>
+        <h2>You're booked</h2>
+        <p class="success-desc">A calendar invite with a Google Meet link has been sent to <strong id="success-email"></strong>.</p>
+        <p class="success-time" id="success-time"></p>
+        <button class="modal-submit" onclick="closeBookingModal()">Done</button>
+      </div>
+    </div>
+  </div>
 
   <script defer src="/_vercel/insights/script.js"></script>
 
