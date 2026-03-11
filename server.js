@@ -14,7 +14,7 @@ const PASSWORD = process.env.PASSWORD || 'workos';
 const NYLAS_API_KEY = process.env.NYLAS_API_KEY;
 const NYLAS_GRANT_ID = process.env.NYLAS_GRANT_ID;
 const NYLAS_EMAIL = process.env.NYLAS_EMAIL;
-const NYLAS_CALENDAR_ID = process.env.NYLAS_CALENDAR_ID || NYLAS_EMAIL;
+const NYLAS_CALENDAR_ID = 'primary';
 
 function requireAuth(req, res, next) {
   const input = (req.headers['x-password'] || '').replace(/[\u201C\u201D\u2018\u2019"']/g, '').trim().toLowerCase();
