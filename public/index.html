@@ -57,6 +57,18 @@
       min-height: 100vh;
       padding: 2rem;
       animation: fadeIn 0.5s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #dither-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      opacity: 0.9;
     }
 
     @keyframes fadeIn {
@@ -688,7 +700,8 @@
 
   <!-- Password Screen -->
   <div id="password-screen">
-    <div class="password-card">
+    <canvas id="dither-canvas"></canvas>
+    <div class="password-card" style="position:relative;z-index:1">
       <h1>Nick Barraclough's Availability</h1>
       <p class="subtitle">Enter the password to view my calendar</p>
       <div class="input-wrap">
@@ -1113,6 +1126,80 @@
       if (e.key === 'Enter') checkPassword();
     });
 
+    // ── Dither background ──
+    (function () {
+      const canvas = document.getElementById('dither-canvas');
+      const ctx    = canvas.getContext('2d');
+      const PX     = 4; // logical pixel size — increase for chunkier dither
+
+      // Bayer 8×8 ordered dither matrix (values 0–63)
+      const BAYER = [
+         0, 32,  8, 40,  2, 34, 10, 42,
+        48, 16, 56, 24, 50, 18, 58, 26,
+        12, 44,  4, 36, 14, 46,  6, 38,
+        60, 28, 52, 20, 62, 30, 54, 22,
+         3, 35, 11, 43,  1, 33,  9, 41,
+        51, 19, 59, 27, 49, 17, 57, 25,
+        15, 47,  7, 39, 13, 45,  5, 37,
+        63, 31, 55, 23, 61, 29, 53, 21,
+      ];
+
+      // Dark / light pixel colours (warm-dark palette)
+      const C0 = [13,  13,  17 ]; // bg
+      const C1 = [46,  44,  64 ]; // slightly lighter, hint of purple
+
+      let imgW, imgH, imageData, rafId;
+
+      function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        imgW = Math.ceil(rect.width  / PX);
+        imgH = Math.ceil(rect.height / PX);
+        canvas.width  = imgW;
+        canvas.height = imgH;
+        imageData = ctx.createImageData(imgW, imgH);
+      }
+
+      // Layered sine field — produces flowing organic blobs
+      function field(x, y, t) {
+        const nx = x / imgW, ny = y / imgH;
+        const u  = nx * 18, v = ny * 11;
+        return (
+          Math.sin(u               +  t * 0.55) * 0.28 +
+          Math.sin(v               -  t * 0.40) * 0.24 +
+          Math.sin((u + v) * 0.65  +  t * 0.30) * 0.24 +
+          Math.sin(Math.sqrt((u - 9) ** 2 + (v - 5.5) ** 2) - t * 0.70) * 0.24
+        ) * 0.5 + 0.5; // → 0..1
+      }
+
+      let t = 0;
+      function frame() {
+        t += 0.012;
+        const d = imageData.data;
+        for (let y = 0; y < imgH; y++) {
+          for (let x = 0; x < imgW; x++) {
+            const threshold = BAYER[(y & 7) * 8 + (x & 7)] / 64;
+            const c = field(x, y, t) > threshold ? C1 : C0;
+            const i = (y * imgW + x) * 4;
+            d[i] = c[0]; d[i+1] = c[1]; d[i+2] = c[2]; d[i+3] = 255;
+          }
+        }
+        ctx.putImageData(imageData, 0, 0);
+        rafId = requestAnimationFrame(frame);
+      }
+
+      function start() { resize(); rafId = requestAnimationFrame(frame); }
+      function stop()  { cancelAnimationFrame(rafId); }
+
+      window.addEventListener('resize', resize);
+      start();
+
+      // Stop when calendar is shown, restart if password screen returns
+      const observer = new MutationObserver(() => {
+        document.getElementById('password-screen').style.display !== 'none' ? start() : stop();
+      });
+      observer.observe(document.getElementById('password-screen'), { attributes: true, attributeFilter: ['style'] });
+    })();
+
     // ── Booking Modal ──
 
     function formatSlotRange(startTs, endTs) {
@@ -1154,7 +1241,6 @@
     async function submitBooking() {
       const name  = document.getElementById('book-name').value.trim();
       const email = document.getElementById('book-email').value.trim();
-      const title = document.getElementById('book-title').value.trim();
       const notes = document.getElementById('book-notes').value.trim();
       const errorEl = document.getElementById('booking-error');
       errorEl.textContent = '';
@@ -1163,7 +1249,8 @@
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         errorEl.textContent = 'Please enter a valid email address.'; return;
       }
-      if (!title) { errorEl.textContent = 'Please describe what this meeting is about.'; return; }
+
+      const title = `${name} x Nick Barraclough`;
 
       const btn = document.getElementById('booking-submit');
       btn.disabled = true;
@@ -1214,19 +1301,15 @@
         <h2>Book a meeting</h2>
         <div class="modal-field">
           <label for="book-name">Your name</label>
-          <input type="text" id="book-name" placeholder="Jane Smith" autocomplete="name" />
+          <input type="text" id="book-name" placeholder="Jane Smith" autocomplete="off" data-1p-ignore data-lpignore="true" />
         </div>
         <div class="modal-field">
           <label for="book-email">Your email</label>
-          <input type="email" id="book-email" placeholder="jane@example.com" autocomplete="email" />
-        </div>
-        <div class="modal-field">
-          <label for="book-title">What's this about?</label>
-          <input type="text" id="book-title" placeholder="Quick intro call" />
+          <input type="email" id="book-email" placeholder="jane@example.com" autocomplete="off" data-1p-ignore data-lpignore="true" />
         </div>
         <div class="modal-field">
           <label for="book-notes">Notes <span class="optional">(optional)</span></label>
-          <textarea id="book-notes" placeholder="Anything else Nick should know…" rows="3"></textarea>
+          <textarea id="book-notes" placeholder="Anything else Nick should know…" rows="3" data-1p-ignore data-lpignore="true"></textarea>
         </div>
         <div class="modal-error" id="booking-error"></div>
         <div class="modal-actions">
