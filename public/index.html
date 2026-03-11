@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nick Barraclough's Availability</title>
+  <title>Find time with Nick Barraclough</title>
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -702,7 +702,7 @@
   <div id="password-screen">
     <canvas id="dither-canvas"></canvas>
     <div class="password-card" style="position:relative;z-index:1">
-      <h1>Nick Barraclough's Availability</h1>
+      <h1>Find time with Nick Barraclough</h1>
       <p class="subtitle">Enter the password to view my calendar</p>
       <div class="input-wrap">
         <input type="password" id="password-input" placeholder="Password" autocomplete="off" data-1p-ignore autofocus />
@@ -726,7 +726,7 @@
   <!-- Calendar Screen -->
   <div id="calendar-screen">
     <div class="calendar-header">
-      <h1>Nick Barraclough's Availability</h1>
+      <h1>Find time with Nick Barraclough</h1>
       <div class="week-nav">
         <button id="prev-btn" onclick="prevWeek()" disabled>&#8592; Prev</button>
         <button id="today-btn" onclick="goToday()" style="display:none">Today</button>
@@ -1149,6 +1149,8 @@
       const C1 = [19,  19,  24 ]; // barely lighter
 
       let imgW, imgH, imageData, rafId;
+      // Mouse — target is raw, mx/my are smoothed
+      let targetMx = 0.5, targetMy = 0.5, mx = 0.5, my = 0.5;
 
       function resize() {
         const rect = canvas.parentElement.getBoundingClientRect();
@@ -1159,26 +1161,39 @@
         imageData = ctx.createImageData(imgW, imgH);
       }
 
-      // Layered sine field — produces flowing organic blobs
-      function field(x, y, t) {
+      canvas.parentElement.addEventListener('mousemove', e => {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        targetMx = (e.clientX - rect.left)  / rect.width;
+        targetMy = (e.clientY - rect.top)   / rect.height;
+      });
+
+      // Layered sine field + mouse ripple
+      function field(x, y, t, smx, smy) {
         const nx = x / imgW, ny = y / imgH;
         const u  = nx * 18, v = ny * 11;
+        const dx = nx - smx, dy = ny - smy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const ripple = Math.sin(dist * 22 - t * 4) * Math.exp(-dist * 5) * 0.6;
         return (
           Math.sin(u               +  t * 0.55) * 0.28 +
           Math.sin(v               -  t * 0.40) * 0.24 +
           Math.sin((u + v) * 0.65  +  t * 0.30) * 0.24 +
-          Math.sin(Math.sqrt((u - 9) ** 2 + (v - 5.5) ** 2) - t * 0.70) * 0.24
+          Math.sin(Math.sqrt((u - 9) ** 2 + (v - 5.5) ** 2) - t * 0.70) * 0.24 +
+          ripple
         ) * 0.5 + 0.5; // → 0..1
       }
 
       let t = 0;
       function frame() {
         t += 0.005;
+        // Smooth mouse tracking
+        mx += (targetMx - mx) * 0.06;
+        my += (targetMy - my) * 0.06;
         const d = imageData.data;
         for (let y = 0; y < imgH; y++) {
           for (let x = 0; x < imgW; x++) {
             const threshold = BAYER[(y & 7) * 8 + (x & 7)] / 64;
-            const c = field(x, y, t) > threshold ? C1 : C0;
+            const c = field(x, y, t, mx, my) > threshold ? C1 : C0;
             const i = (y * imgW + x) * 4;
             d[i] = c[0]; d[i+1] = c[1]; d[i+2] = c[2]; d[i+3] = 255;
           }
