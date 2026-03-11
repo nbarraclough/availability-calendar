@@ -69,7 +69,7 @@
       image-rendering: -webkit-optimize-contrast; /* Safari */
       image-rendering: pixelated;
       image-rendering: crisp-edges;
-      opacity: 0.4;
+      opacity: 0.55;
     }
 
     @keyframes fadeIn {
@@ -1167,9 +1167,11 @@
         63, 31, 55, 23, 61, 29, 53, 21,
       ];
 
-      // Dark / light pixel colours — keep contrast very low
+      // Dark / light pixel colours
+      // Effective on-screen contrast = opacity × (C1 − C0), so C1 must be
+      // meaningfully different from C0 to survive the opacity blend.
       const C0 = [13,  13,  17 ]; // bg
-      const C1 = [24,  23,  32 ]; // barely lighter
+      const C1 = [38,  36,  54 ]; // noticeably lighter — still dark
 
       let imgW, imgH, imageData, rafId;
       // Mouse — target is raw, mx/my are smoothed
@@ -1177,8 +1179,10 @@
 
       function resize() {
         const rect = canvas.parentElement.getBoundingClientRect();
-        imgW = Math.ceil(rect.width  / PX);
-        imgH = Math.ceil(rect.height / PX);
+        const w = rect.width  || window.innerWidth;
+        const h = rect.height || window.innerHeight;
+        imgW = Math.ceil(w / PX);
+        imgH = Math.ceil(h / PX);
         canvas.width  = imgW;
         canvas.height = imgH;
         imageData = ctx.createImageData(imgW, imgH);
