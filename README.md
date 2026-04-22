@@ -6,18 +6,20 @@ A simple web app that shows your free/busy availability in a weekly calendar vie
 
 - Visitors enter a shared password to access the calendar
 
-<img width="1852" height="1532" alt="CleanShot 2026-02-23 at 13 30 11@2x" src="https://github.com/user-attachments/assets/e84eb1e9-3ade-499b-8219-589d66e7c636" />
+<img width="1928" height="1430" alt="CleanShot 2026-04-22 at 17 55 17@2x" src="https://github.com/user-attachments/assets/7164152a-7db8-4416-9092-d177986a32ff" />
 
 The password has case & extra characters stripped just in case someone enters it incorrectly.
   
 - The app displays a Monday–Friday grid showing 30-minute time slots
 
-<img width="2096" height="2146" alt="CleanShot 2026-02-23 at 13 31 03@2x" src="https://github.com/user-attachments/assets/cea8afad-eec2-41ba-b011-7564d2b831a4" />
+<img width="2108" height="1778" alt="CleanShot 2026-04-22 at 17 55 46@2x" src="https://github.com/user-attachments/assets/304abd34-01e0-42e0-8a68-7e738addf79c" />
 
 
-- Slots are marked as **available** (green), **busy** (grey), or **passed** (faded) based on live calendar data
+- Slots are marked as **available**, **busy**, or **passed** based on live calendar data
 - The calendar is anchored to your working hours (9am–6pm MST) but displayed in the visitor's local timezone, which they can override
 - A "Copy available times" button lets visitors copy a formatted list of your open windows to their clipboard, ready to paste into an email or message
+
+<img width="508" height="134" alt="CleanShot 2026-04-22 at 17 56 26@2x" src="https://github.com/user-attachments/assets/88204c5c-69d3-40ed-a535-e0209ee4b672" />
 
 <img width="732" height="1030" alt="CleanShot 2026-02-23 at 13 31 36@2x" src="https://github.com/user-attachments/assets/7c37003b-c28a-4f11-a7b6-113c4d30b70d" />
 
